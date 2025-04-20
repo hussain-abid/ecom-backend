@@ -91,6 +91,14 @@ const login = async (req, res) => {
     try {
         const { shop_id } = req.params;
         const { email, password } = req.body;
+        const session_id = req.header('X-Session-ID');
+
+        if (!session_id) {
+            return res.status(400).json({
+                success: false,
+                message: 'Session ID is required'
+            });
+        }
 
         // Validate email
         const validatedEmail = validateEmail(email);
@@ -112,15 +120,27 @@ const login = async (req, res) => {
             throw new Error('Invalid email or password');
         }
 
-        // Create new session
-        const session = await Session.create({
-            session_id: require('crypto').randomBytes(32).toString('hex'),
-            user_id: user._id,
-            shop_id,
-            ip_address: req.ip,
-            user_agent: req.headers['user-agent'],
-            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
-        });
+        // Update existing session with user_id
+        const session = await Session.findOneAndUpdate(
+            {
+                session_id,
+                shop_id,
+                status: 'active',
+                expires_at: { $gt: new Date() }
+            },
+            {
+                user_id: user._id,
+                updated_at: new Date()
+            },
+            { new: true }
+        );
+
+        if (!session) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired session'
+            });
+        }
 
         res.status(200).json({
             success: true,

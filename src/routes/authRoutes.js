@@ -17,7 +17,7 @@ router.post('/:shop_id/start-guest-session', startGuestSession);
 // router.post('/:shop_id/signup', validateUserRegistration, signup);
 
 // User login
-router.post('/:shop_id/login', login);
+router.post('/:shop_id/login', auth, login);
 
 // User logout
 // router.post('/:shop_id/logout', auth, logout);
