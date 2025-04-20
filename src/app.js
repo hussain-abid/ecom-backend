@@ -13,7 +13,6 @@ const shopRoutes = require('./routes/shopRoutes');
 const productRoutes = require('./routes/productRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const checkoutRoutes = require('./routes/checkoutRoutes');
-const orderRoutes = require('./routes/orderRoutes');
 const adminAuthRoutes = require('./routes/adminAuthRoutes');
 
 // Import error handling middleware
@@ -41,7 +40,6 @@ app.use('/api/shops', shopRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/checkout', checkoutRoutes);
-app.use('/api', orderRoutes);
 app.use('/api/admin', adminAuthRoutes);
 
 // Error handling

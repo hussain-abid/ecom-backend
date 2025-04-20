@@ -14,15 +14,15 @@ const {
 router.post('/:shop_id/start-guest-session', startGuestSession);
 
 // User signup
-router.post('/:shop_id/signup', validateUserRegistration, signup);
+// router.post('/:shop_id/signup', validateUserRegistration, signup);
 
 // User login
 router.post('/:shop_id/login', login);
 
 // User logout
-router.post('/:shop_id/logout', auth, logout);
+// router.post('/:shop_id/logout', auth, logout);
 
 // Get current user
-router.get('/:shop_id/me', auth, getCurrentUser);
+// router.get('/:shop_id/me', auth, getCurrentUser);
 
 module.exports = router; 

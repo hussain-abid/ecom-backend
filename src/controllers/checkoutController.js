@@ -21,20 +21,33 @@ const validateAddress = (address, type) => {
 
     const missingFields = requiredFields.filter(field => !address[field]);
     if (missingFields.length > 0) {
-        throw new Error(`Missing required ${type} address fields: ${missingFields.join(', ')}`);
+        return {
+            isValid: false,
+            message: `Missing required address fields: ${missingFields.join(', ')}`
+        };
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(address.email)) {
-        throw new Error(`Invalid email format in ${type} address`);
+        return {
+            isValid: false,
+            message: `Invalid email format in ${type} address`
+        };
     }
 
     // Validate phone format (basic validation)
     const phoneRegex = /^\+?[\d\s-]{10,}$/;
     if (!phoneRegex.test(address.phone)) {
-        throw new Error(`Invalid phone format in ${type} address`);
+        return {
+            isValid: false,
+            message: `Invalid phone format in ${type} address`
+        };
     }
+
+    return {
+        isValid: true
+    };
 };
 
 // Calculate shipping based on address and order total
@@ -70,49 +83,63 @@ const calculateTax = (addresses, subtotal) => {
 const processCheckout = async (req, res) => {
     try {
         const { shop_id } = req.params;
+        const { billing_address, shipping_address, payment_type_id } = req.body;
         const session_id = req.session.session_id;
-        const {
-            addresses,
-            payment_type_id
-        } = req.body;
 
-        // Validate required fields
-        if (!addresses || !payment_type_id) {
-            throw new Error('Addresses and payment type are required');
+        // Validate both addresses
+        if (!billing_address || !shipping_address) {
+            return res.status(400).json({
+                success: false,
+                message: 'Both billing and shipping addresses are required'
+            });
         }
 
-        // Validate payment type
+        // Validate billing address
+        const billingValidation = validateAddress(billing_address, 'billing');
+        if (!billingValidation.isValid) {
+            return res.status(400).json({
+                success: false,
+                message: `Billing address validation failed: ${billingValidation.message}`
+            });
+        }
+
+        // Validate shipping address
+        const shippingValidation = validateAddress(shipping_address, 'shipping');
+        if (!shippingValidation.isValid) {
+            return res.status(400).json({
+                success: false,
+                message: `Shipping address validation failed: ${shippingValidation.message}`
+            });
+        }
+
+        // Get cart
+        const cart = await Cart.findOne({
+            shop_id,
+            session_id,
+            status: 'active'
+        }).populate('items.product_id', 'price');
+
+        if (!cart || cart.items.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cart not found or empty'
+            });
+        }
+
+        // Get payment type details
         const paymentType = await PaymentType.findOne({
             _id: payment_type_id,
             shop_id,
             is_active: true
         });
 
+        console.log("paymentType",paymentType);
+
         if (!paymentType) {
-            throw new Error('Invalid or inactive payment type');
-        }
-
-        // Validate billing address
-        if (!addresses.billing) {
-            throw new Error('Billing address is required');
-        }
-        validateAddress(addresses.billing, 'billing');
-
-        // Validate shipping address
-        if (!addresses.shipping) {
-            throw new Error('Shipping address is required');
-        }
-        validateAddress(addresses.shipping, 'shipping');
-
-        // Get the active cart with coupon
-        const cart = await Cart.findOne({
-            shop_id,
-            session_id,
-            status: 'active'
-        }).populate('items.product_id', 'price variants');
-
-        if (!cart || cart.items.length === 0) {
-            throw new Error('Cart is empty');
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid payment type'
+            });
         }
 
         // Calculate subtotal
@@ -121,109 +148,66 @@ const processCheckout = async (req, res) => {
             subtotal += item.price * item.quantity;
         }
 
-        // Calculate shipping and tax
-        const shipping = calculateShipping(addresses.shipping, subtotal);
-        const tax = calculateTax(addresses.billing, subtotal);
+        // Calculate shipping and tax based on shipping address
+        const shipping = calculateShipping(shipping_address, subtotal);
+        const tax = calculateTax(shipping_address, subtotal);
 
-        // Calculate total with discount
-        const total = subtotal - (cart.discount_amount || 0) + tax + shipping;
+        // Create order
+        const order = await Order.create({
+            shop_id,
+            user_id: cart.user_id,
+            session_id,
+            products: cart.items.map(item => ({
+                product_id: item.product_id._id,
+                quantity: item.quantity,
+                price: item.price,
+                selected_variants: item.selected_variants
+            })),
+            addresses: {
+                billing: billing_address,
+                shipping: shipping_address
+            },
+            payment: {
+                _id: paymentType._id,
+                name: paymentType.name,
+                description: paymentType.description
+            },
+            subtotal,
+            shipping,
+            tax,
+            total: subtotal + shipping + tax - (cart.discount_amount || 0),
+            coupon_id: cart.coupon_id,
+            discount_amount: cart.discount_amount || 0,
+            status: 'pending'
+        });
 
-        try {
-            // Create order
-            const order = await Order.create({
-                session_id,
-                shop_id,
-                subtotal,
-                discount_amount: cart.discount_amount || 0,
-                coupon_id: cart.coupon_id,
-                tax,
-                shipping,
-                total,
-                products: cart.items.map(item => ({
-                    product_id: item.product_id._id,
-                    quantity: item.quantity,
-                    price: item.price,
-                    selected_variants: item.selected_variants.map(variant => ({
-                        name: variant.name,
-                        value: variant.value,
-                        price_adjustment: variant.price_adjustment
-                    }))
-                })),
-                addresses: {
-                    country: addresses.billing.country,
-                    first_name: addresses.billing.first_name,
-                    last_name: addresses.billing.last_name,
-                    address: addresses.billing.address,
-                    apartment: addresses.billing.address2,
-                    city: addresses.billing.city,
-                    postal_code: addresses.billing.postal_code,
-                    phone: addresses.billing.phone
-                },
-                payment_type_id,
-                status: 'pending'
+        // Clear cart
+        await Cart.findByIdAndUpdate(cart._id, {
+            $set: {
+                items: [],
+                subtotal: 0,
+                shipping: 0,
+                tax: 0,
+                total: 0,
+                coupon_id: null,
+                discount_amount: 0
+            }
+        });
+
+        // Update coupon usage if applied
+        if (cart.coupon_id) {
+            await Coupon.findByIdAndUpdate(cart.coupon_id, {
+                $inc: { used_count: 1 }
             });
-
-            // Update coupon usage if a coupon was applied
-            if (cart.coupon_id) {
-                await Coupon.updateOne(
-                    { _id: cart.coupon_id },
-                    { $inc: { used_count: 1 } }
-                );
-            }
-
-            // Update cart status to converted
-            await Cart.updateOne(
-                { _id: cart._id },
-                { 
-                    status: 'converted',
-                    items: [],
-                    discount_amount: 0,
-                    coupon_id: null
-                }
-            );
-
-            // Update product quantities
-            for (const item of cart.items) {
-                const product = item.product_id;
-                
-                // For products with variants
-                if (product.variants && product.variants.length > 0) {
-                    for (const selectedVariant of item.selected_variants) {
-                        const variant = product.variants.find(v => v.name === selectedVariant.name);
-                        const option = variant.options.find(o => o.name === selectedVariant.value);
-                        
-                        if (!option || option.quantity < item.quantity) {
-                            throw new Error(`Insufficient stock for ${product.name} - ${selectedVariant.name}: ${selectedVariant.value}`);
-                        }
-                        
-                        option.quantity -= item.quantity;
-                    }
-                } else {
-                    if (product.quantity < item.quantity) {
-                        throw new Error(`Insufficient stock for ${product.name}`);
-                    }
-                    product.quantity -= item.quantity;
-                }
-                
-                await product.save();
-            }
-
-            res.status(201).json({
-                success: true,
-                message: 'Order created successfully',
-                data: {
-                    order
-                }
-            });
-        } catch (error) {
-            // If any error occurs, try to clean up
-            if (order) {
-                await Order.deleteOne({ _id: order._id });
-            }
-            throw error;
         }
+
+        res.status(201).json({
+            success: true,
+            data: order
+        });
     } catch (error) {
-        res.status(400).json({
+        console.error('Checkout error:', error);
+        res.status(500).json({
             success: false,
             message: 'Error processing checkout',
             error: error.message

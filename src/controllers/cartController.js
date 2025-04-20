@@ -70,9 +70,9 @@ const applyCoupon = async (req, res) => {
     try {
         const { shop_id } = req.params;
         const session_id = req.session.session_id;
-        const { coupon_code } = req.body;
+        const { code } = req.body;
 
-        if (!coupon_code) {
+        if (!code) {
             throw new Error('Coupon code is required');
         }
 
@@ -95,7 +95,7 @@ const applyCoupon = async (req, res) => {
 
         // Find and validate coupon
         const coupon = await Coupon.findOne({
-            code: coupon_code,
+            code,
             shop_id,
             is_active: true,
             start_date: { $lte: new Date() },

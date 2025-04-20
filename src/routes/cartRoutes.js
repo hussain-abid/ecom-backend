@@ -11,25 +11,27 @@ const {
     removeCoupon
 } = require('../controllers/cartController');
 
+
+
 // Apply coupon (more specific route first)
-router.post('/:shop_id/cart/apply-coupon', auth, applyCoupon);
+router.post('/:shop_id/apply-coupon', auth, applyCoupon);
 
 // Remove coupon
-router.delete('/:shop_id/cart/remove-coupon', auth, removeCoupon);
+router.delete('/:shop_id/remove-coupon', auth, removeCoupon);
 
 // Get cart
-router.get('/:shop_id/cart', auth, getCart);
-
-// Add item to cart
-router.post('/:shop_id/cart/:product_id', auth, addToCart);
-
-// Update cart item
-router.put('/:shop_id/cart/:product_id', auth, updateCartItem);
-
-// Remove item from cart
-router.delete('/:shop_id/cart/:product_id', auth, removeFromCart);
+router.get('/:shop_id', auth, getCart);
 
 // Clear cart
-router.delete('/:shop_id/cart', auth, clearCart);
+router.delete('/:shop_id', auth, clearCart);
 
-module.exports = router; 
+// Add item to cart
+router.post('/:shop_id/:product_id', auth, addToCart);
+
+// Update cart item
+router.put('/:shop_id/:product_id', auth, updateCartItem);
+
+// Remove item from cart
+router.delete('/:shop_id/:product_id', auth, removeFromCart);
+
+module.exports = router;

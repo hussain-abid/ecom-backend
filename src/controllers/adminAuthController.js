@@ -1,8 +1,6 @@
-const AdminUser = require('../models/adminUserModel');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+const AdminUser = require('../models/adminUserModel');
 
-// Admin login
 const adminLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -17,15 +15,15 @@ const adminLogin = async (req, res) => {
         }
 
         // Check if admin is active
-        if (!admin.is_active) {
+        if (admin.status !== 'active') {
             return res.status(401).json({
                 success: false,
-                message: 'Account is deactivated'
+                message: 'Account is inactive'
             });
         }
 
         // Verify password
-        const isMatch = await bcrypt.compare(password, admin.password);
+        const isMatch = await admin.comparePassword(password);
         if (!isMatch) {
             return res.status(401).json({
                 success: false,
@@ -39,34 +37,98 @@ const adminLogin = async (req, res) => {
 
         // Generate token
         const token = jwt.sign(
-            { id: admin._id, shop_id: admin.shop_id, role: admin.role },
+            { 
+                id: admin._id,
+                email: admin.email,
+                role: admin.role
+            },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
 
-        res.status(200).json({
+        // Return success response
+        res.json({
             success: true,
-            data: {
-                token,
-                admin: {
-                    id: admin._id,
-                    email: admin.email,
-                    first_name: admin.first_name,
-                    last_name: admin.last_name,
-                    role: admin.role,
-                    shop_id: admin.shop_id
-                }
+            token,
+            admin: {
+                id: admin._id,
+                name: admin.name,
+                email: admin.email,
+                role: admin.role,
+                // shop_ids: admin.shop_ids
             }
         });
     } catch (error) {
+        console.error('Admin login error:', error);
         res.status(500).json({
             success: false,
-            message: 'Error during login',
-            error: error.message
+            message: 'Server error'
+        });
+    }
+};
+
+const createAdmin = async (req, res) => {
+    try {
+        const { name, email, password, role } = req.body;
+
+        // Validate required fields
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Name, email, and password are required'
+            });
+        }
+
+        // Check if admin already exists
+        const existingAdmin = await AdminUser.findOne({ email });
+        if (existingAdmin) {
+            return res.status(400).json({
+                success: false,
+                message: 'Admin with this email already exists'
+            });
+        }
+
+        // Create new admin
+        const admin = await AdminUser.create({
+            name,
+            email,
+            password,
+            role: role || 'admin',
+            status: 'active'
+        });
+
+        // Generate token
+        const token = jwt.sign(
+            { 
+                id: admin._id,
+                email: admin.email,
+                role: admin.role
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.status(201).json({
+            success: true,
+            token,
+            admin: {
+                id: admin._id,
+                name: admin.name,
+                email: admin.email,
+                role: admin.role,
+                shop_ids: admin.shop_ids
+            }
+        });
+    } catch (error) {
+        console.error('Create admin error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
         });
     }
 };
 
 module.exports = {
-    adminLogin
+    adminLogin,
+    createAdmin
 }; 

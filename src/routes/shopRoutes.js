@@ -1,24 +1,29 @@
 const express = require('express');
 const router = express.Router();
-const { auth, isAdmin } = require('../middleware/auth');
-const { validateShopRegistration } = require('../middleware/validate');
+const { verifyAdminToken } = require('../middleware/auth');
 const {
     createShop,
     getShop,
     updateShop,
-    deleteShop
+    deleteShop,
+    getShopOrders,
+    updateOrderStatus,
+    getAdminShops
 } = require('../controllers/shopController');
+const { getStoreOrders } = require('../controllers/orderController');
 
-// Create a new shop
-router.post('/create', validateShopRegistration, createShop);
+// Get all shops for the logged-in admin
+router.get('/all', verifyAdminToken, getAdminShops);
 
-// Get shop details
-router.get('/:shop_id', auth, getShop);
+// Shop CRUD routes with admin authentication
+router.post('/', verifyAdminToken, createShop);
+router.get('/:shop_id', verifyAdminToken, getShop);
+// router.put('/:shop_id', verifyAdminToken, updateShop);
+router.delete('/:shop_id', verifyAdminToken, deleteShop);
 
-// Update shop
-router.patch('/:shop_id', auth, isAdmin, updateShop);
-
-// Delete shop
-router.delete('/:shop_id', auth, isAdmin, deleteShop);
+// Order management routes with admin authentication
+router.get('/:shop_id/orders', verifyAdminToken, getShopOrders);
+// router.put('/:shop_id/orders/:order_id/status', verifyAdminToken, updateOrderStatus);
+// router.get('/:shop_id/orders', getStoreOrders);
 
 module.exports = router; 

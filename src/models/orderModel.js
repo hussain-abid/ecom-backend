@@ -60,44 +60,98 @@ const orderSchema = new mongoose.Schema({
         }
     }],
     addresses: {
-        country: {
-            type: String,
-            required: true
+        billing: {
+            country: {
+                type: String,
+                required: true
+            },
+            first_name: {
+                type: String,
+                required: true
+            },
+            last_name: {
+                type: String,
+                required: true
+            },
+            address: {
+                type: String,
+                required: true
+            },
+            apartment: {
+                type: String
+            },
+            suite_etc: {
+                type: String
+            },
+            city: {
+                type: String,
+                required: true
+            },
+            postal_code: {
+                type: String
+            },
+            phone: {
+                type: String,
+                required: true
+            },
+            email: {
+                type: String,
+                required: true
+            }
         },
-        first_name: {
-            type: String,
-            required: true
-        },
-        last_name: {
-            type: String,
-            required: true
-        },
-        address: {
-            type: String,
-            required: true
-        },
-        apartment: {
-            type: String
-        },
-        suite_etc: {
-            type: String
-        },
-        city: {
-            type: String,
-            required: true
-        },
-        postal_code: {
-            type: String
-        },
-        phone: {
-            type: String,
-            required: true
+        shipping: {
+            country: {
+                type: String,
+                required: true
+            },
+            first_name: {
+                type: String,
+                required: true
+            },
+            last_name: {
+                type: String,
+                required: true
+            },
+            address: {
+                type: String,
+                required: true
+            },
+            apartment: {
+                type: String
+            },
+            suite_etc: {
+                type: String
+            },
+            city: {
+                type: String,
+                required: true
+            },
+            postal_code: {
+                type: String
+            },
+            phone: {
+                type: String,
+                required: true
+            },
+            email: {
+                type: String,
+                required: true
+            }
         }
     },
-    payment_type_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'PaymentType',
-        required: true
+    payment: {
+        _id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'PaymentType',
+            required: true
+        },
+        name: {
+            type: String,
+            required: true
+        },
+        description: {
+            type: String
+        }
     },
     status: {
         type: String,

@@ -34,10 +34,35 @@
       ]
     },
     {
-      "name": "Orders",
+      "name": "Shop Management",
       "item": [
         {
-          "name": "Get Store Orders",
+          "name": "Create Shop",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"My Shop\",\n    \"description\": \"Shop description\",\n    \"address\": \"Shop address\",\n    \"contact_email\": \"contact@myshop.com\",\n    \"contact_phone\": \"+1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/shops",
+              "host": ["{{base_url}}"],
+              "path": ["api", "shops"]
+            }
+          }
+        },
+        {
+          "name": "Get Shop Details",
           "request": {
             "method": "GET",
             "header": [
@@ -47,9 +72,327 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/:shop_id/orders?page=1&limit=10&status=pending",
+              "raw": "{{base_url}}/api/shops/{{shop_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", ":shop_id", "orders"],
+              "path": ["api", "shops", "{{shop_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Shop",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Updated Shop Name\",\n    \"description\": \"Updated description\",\n    \"address\": \"Updated address\",\n    \"contact_email\": \"updated@myshop.com\",\n    \"contact_phone\": \"+1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/shops/{{shop_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "shops", "{{shop_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Shop",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/shops/{{shop_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "shops", "{{shop_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Product Management",
+      "item": [
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"iPhone 13 Pro\",\n    \"description\": \"Latest iPhone with advanced camera system\",\n    \"price\": 999.99,\n    \"quantity\": 50,\n    \"category_id\": \"{{category_id}}\",\n    \"variants\": [\n        {\n            \"name\": \"Storage\",\n            \"options\": [\n                { \"name\": \"128GB\", \"price_adjustment\": 0, \"quantity\": 20 },\n                { \"name\": \"256GB\", \"price_adjustment\": 100, \"quantity\": 20 },\n                { \"name\": \"512GB\", \"price_adjustment\": 200, \"quantity\": 10 }\n            ]\n        },\n        {\n            \"name\": \"Color\",\n            \"options\": [\n                { \"name\": \"Graphite\", \"price_adjustment\": 0, \"quantity\": 20 },\n                { \"name\": \"Silver\", \"price_adjustment\": 0, \"quantity\": 20 },\n                { \"name\": \"Gold\", \"price_adjustment\": 50, \"quantity\": 10 }\n            ]\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/shops/{{shop_id}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "shops", "{{shop_id}}", "products"]
+            }
+          }
+        },
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/shops/{{shop_id}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "shops", "{{shop_id}}", "products"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Product",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/shops/{{shop_id}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "shops", "{{shop_id}}", "products", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"iPhone 13 Pro Updated\",\n    \"price\": 899.99,\n    \"quantity\": 40\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/shops/{{shop_id}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "shops", "{{shop_id}}", "products", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/shops/{{shop_id}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "shops", "{{shop_id}}", "products", "{{product_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart Management",
+      "item": [
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Session-ID",
+                "value": "{{session_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/cart/{{shop_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cart", "{{shop_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Add to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Session-ID",
+                "value": "{{session_id}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"product_id\": \"{{product_id}}\",\n    \"quantity\": 1,\n    \"variant_id\": \"{{variant_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cart/{{shop_id}}/add",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cart", "{{shop_id}}", "add"]
+            }
+          }
+        },
+        {
+          "name": "Update Cart Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/shops/{{shop_id}}/cart/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "shops", "{{shop_id}}", "cart", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Remove from Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/shops/{{shop_id}}/cart/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "shops", "{{shop_id}}", "cart", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Clear Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/shops/{{shop_id}}/cart",
+              "host": ["{{base_url}}"],
+              "path": ["api", "shops", "{{shop_id}}", "cart"]
+            }
+          }
+        },
+        {
+          "name": "Apply Coupon",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Session-ID",
+                "value": "{{session_id}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"code\": \"WELCOME10\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cart/{{shop_id}}/coupon",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cart", "{{shop_id}}", "coupon"]
+            }
+          }
+        },
+        {
+          "name": "Remove Coupon",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Session-ID",
+                "value": "{{session_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/cart/{{shop_id}}/coupon",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cart", "{{shop_id}}", "coupon"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order Management",
+      "item": [
+        {
+          "name": "Get Shop Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/shops/{{shop_id}}/orders?page=1&limit=10&status=pending",
+              "host": ["{{base_url}}"],
+              "path": ["api", "shops", "{{shop_id}}", "orders"],
               "query": [
                 {
                   "key": "page",
@@ -64,83 +407,32 @@
                   "value": "pending"
                 }
               ]
-            },
-            "description": "Get all orders for a store (admin only)"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Cart",
-      "item": [
-        {
-          "name": "Get Cart",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/cart/:shop_id/cart",
-              "host": ["{{base_url}}"],
-              "path": ["api", "cart", ":shop_id", "cart"]
-            },
-            "description": "Get cart details"
+            }
           }
         },
         {
-          "name": "Add to Cart",
+          "name": "Update Order Status",
           "request": {
-            "method": "POST",
+            "method": "PUT",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"product_id\": \"product_id_here\",\n    \"quantity\": 1,\n    \"selected_variants\": [\n        {\n            \"name\": \"Storage\",\n            \"value\": \"256GB\"\n        },\n        {\n            \"name\": \"Color\",\n            \"value\": \"Graphite\"\n        }\n    ]\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/cart/:shop_id/cart",
-              "host": ["{{base_url}}"],
-              "path": ["api", "cart", ":shop_id", "cart"]
-            },
-            "description": "Add item to cart"
-          }
-        },
-        {
-          "name": "Apply Coupon",
-          "request": {
-            "method": "POST",
-            "header": [
+              },
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"code\": \"DISCOUNT10\"\n}"
+              "raw": "{\n    \"status\": \"processing\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/cart/:shop_id/cart/apply-coupon",
+              "raw": "{{base_url}}/api/shops/{{shop_id}}/orders/{{order_id}}/status",
               "host": ["{{base_url}}"],
-              "path": ["api", "cart", ":shop_id", "cart", "apply-coupon"]
-            },
-            "description": "Apply coupon to cart"
-          }
-        },
-        {
-          "name": "Remove Coupon",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/cart/:shop_id/cart/remove-coupon",
-              "host": ["{{base_url}}"],
-              "path": ["api", "cart", ":shop_id", "cart", "remove-coupon"]
-            },
-            "description": "Remove coupon from cart"
+              "path": ["api", "shops", "{{shop_id}}", "orders", "{{order_id}}", "status"]
+            }
           }
         }
       ]
@@ -156,18 +448,114 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-Session-ID",
+                "value": "{{session_id}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"addresses\": {\n        \"billing\": {\n            \"first_name\": \"John\",\n            \"last_name\": \"Doe\",\n            \"email\": \"john@example.com\",\n            \"phone\": \"+1234567890\",\n            \"address\": \"123 Main St\",\n            \"address2\": \"Apt 4B\",\n            \"city\": \"New York\",\n            \"state\": \"NY\",\n            \"country\": \"United States\",\n            \"postal_code\": \"10001\"\n        },\n        \"shipping\": {\n            \"first_name\": \"John\",\n            \"last_name\": \"Doe\",\n            \"email\": \"john@example.com\",\n            \"phone\": \"+1234567890\",\n            \"address\": \"123 Main St\",\n            \"address2\": \"Apt 4B\",\n            \"city\": \"New York\",\n            \"state\": \"NY\",\n            \"country\": \"United States\",\n            \"postal_code\": \"10001\"\n        }\n    },\n    \"payment_type_id\": \"payment_type_id_here\"\n}"
+              "raw": "{\n    \"billing_address\": {\n        \"country\": \"US\",\n        \"first_name\": \"John\",\n        \"last_name\": \"Doe\",\n        \"address\": \"123 Main St\",\n        \"apartment\": \"Apt 4B\",\n        \"city\": \"New York\",\n        \"postal_code\": \"10001\",\n        \"phone\": \"+1234567890\",\n        \"email\": \"john@example.com\"\n    },\n    \"shipping_address\": {\n        \"country\": \"US\",\n        \"first_name\": \"John\",\n        \"last_name\": \"Doe\",\n        \"address\": \"123 Main St\",\n        \"apartment\": \"Apt 4B\",\n        \"city\": \"New York\",\n        \"postal_code\": \"10001\",\n        \"phone\": \"+1234567890\",\n        \"email\": \"john@example.com\"\n    },\n    \"payment_type_id\": \"{{payment_type_id}}\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/checkout/:shop_id/checkout",
+              "raw": "{{base_url}}/api/checkout/{{shop_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "checkout", ":shop_id", "checkout"]
+              "path": ["api", "checkout", "{{shop_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Start Guest Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/{{shop_id}}/start-guest-session",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "{{shop_id}}", "start-guest-session"]
             },
-            "description": "Process checkout with addresses and payment"
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "var data = pm.response.json();",
+                    "pm.environment.set(\"token\", data.data.session_id);"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "User Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/{{shop_id}}/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "{{shop_id}}", "signup"]
+            }
+          }
+        },
+        {
+          "name": "User Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/{{shop_id}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "{{shop_id}}", "login"]
+            }
+          }
+        },
+        {
+          "name": "User Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/{{shop_id}}/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "{{shop_id}}", "logout"]
+            }
           }
         }
       ]
@@ -179,12 +567,40 @@
       "value": "http://localhost:3000"
     },
     {
+      "key": "token",
+      "value": "your_user_token_here"
+    },
+    {
       "key": "admin_token",
       "value": "your_admin_token_here"
     },
     {
       "key": "shop_id",
       "value": "your_shop_id_here"
+    },
+    {
+      "key": "product_id",
+      "value": "your_product_id_here"
+    },
+    {
+      "key": "category_id",
+      "value": "your_category_id_here"
+    },
+    {
+      "key": "payment_type_id",
+      "value": "your_payment_type_id_here"
+    },
+    {
+      "key": "session_id",
+      "value": "your_session_id_here"
+    },
+    {
+      "key": "variant_id",
+      "value": "your_variant_id_here"
+    },
+    {
+      "key": "order_id",
+      "value": "your_order_id_here"
     }
   ]
 } 
